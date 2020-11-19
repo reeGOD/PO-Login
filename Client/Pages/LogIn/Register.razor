@@ -1,0 +1,112 @@
+﻿@page "/account/create"
+@inject HttpClient http
+@inject NavigationManager nav
+@inject PersistentData persistentData
+
+<h3>New Account</h3>
+
+<EditForm Model="@user" OnValidSubmit="@CreateUser">
+    <DataAnnotationsValidator />
+
+    @if (EmailExists)
+    {
+        <div class="form-group col-6">
+            <input type="email" class="form-control" placeholder="Email address"
+                   @bind-value="@user.Email" @bind-value:event="onchange">
+            <ValidationMessage For="@( () => user.Email )" />
+        </div>
+        
+        <div>
+            <button class="btn btn-primary" @onclick="@CheckEmail"> Avançar </button>
+        </div>
+    }
+    <br />
+
+    @if (EmailExists && EmailExistsError)
+    {
+        <p>Email existente.</p>
+    }
+    else if (!EmailExists)
+    {
+       
+        <div class="form-group">
+            
+            <input type="password" class="form-control" placeholder="Password" @bind-value="@user.Password">
+            <ValidationMessage For="@( () => user.Password )" />
+        </div>
+        <div class="form-group">
+            
+            <input type="password" class="form-control" placeholder="Confirm password" @bind-value="@ConfirmPassword">
+            @if (ConfirmPassword != user.Password)
+            {
+                <p>senhas precisam ser iguais</p>
+            }
+        </div>
+
+        <br />
+
+        <div class="form-group">
+            
+            <input type="text" class="form-control" placeholder="Username" @bind-value="@user.Name">
+            <ValidationMessage For="@( () => user.Name )" />
+        </div>
+
+        <button class="btn btn-primary">Salvar</button>
+    }
+</EditForm>
+
+@code {
+    private bool EmailExists = true;
+    private bool EmailExistsError = false;
+    private string ConfirmPassword;
+
+    public User user = new User();
+
+    public async Task CreateUser()
+    {
+        user.Role = 3;
+
+        await http.PostAsJsonAsync<User>("api/Users", user);
+        nav.NavigateTo("login");
+    }
+
+    public async Task CheckEmail()
+    {
+        bool valid;
+        try
+        {
+            var mail = new System.Net.Mail.MailAddress(user.Email);
+            valid = true;
+        }
+        catch
+        {
+            valid = false;
+        }
+
+        if (valid)
+        {
+            var users = await http.GetFromJsonAsync<List<User>>("api/Users");
+
+            foreach (User registeredUser in users)
+            {
+                if (registeredUser.Email == user.Email)
+                {
+                    EmailExists = true;
+                    EmailExistsError = true;
+                    persistentData.Email = user.Email; 
+                    return;
+                }
+            }
+            EmailExists = false;
+        }
+    }
+    public void Reset()
+    {
+        EmailExists = true;
+        EmailExistsError = false;
+        user.Email = null;
+        user.Password = null;
+        ConfirmPassword = null;
+        user.Name = null;
+    }
+}

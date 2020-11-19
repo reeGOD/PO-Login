@@ -1,0 +1,17 @@
+﻿@page "/main"
+@inject PersistentData Usuario
+<center>
+    <h3>Main</h3>
+</center>
+
+<ul>
+  <li >Seu nome: @Usuario.Name</li>
+  <li>Nivel de Prioridades : 1 Adm, 2 Power, 3 Cliente normal</li>
+  <li>Nivel de Sua Prioridade: @Usuario.Role</li>
+</ul>
+
+<p>Dependendo do nivel de sua Prioridade voce pode ver paginas que outros usuario nao podem ver</p>
+
+@code {
+
+}

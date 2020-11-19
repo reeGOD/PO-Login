@@ -1,0 +1,54 @@
+﻿@page "/login"
+@inject HttpClient http
+@inject NavigationManager nav
+@inject PersistentData PersistentData
+
+<h3>Login</h3>
+
+<br />
+
+<EditForm Model="@log" OnValidSubmit="@GrantAccess">
+    <div class="form-group col-6">
+        
+        <input type="email" class="form-control" placeholder="Email address" @bind-value="@log.Email">
+    </div>
+    <div class="form-group col-6">
+        
+        <input type="password" class="form-control" placeholder="Password" @bind-value="@log.Password">
+
+    </div>
+    @if (invalidCredentials)
+    {
+        <p style="color: red;">Invalid email and password combination</p>
+    }
+    <button type="submit" class="btn btn-primary">Log In</button>
+</EditForm>
+
+
+
+@code {
+    private LoginTemp log = new LoginTemp();
+    public bool invalidCredentials = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (PersistentData.Email != null) log.Email = PersistentData.Email;
+    }
+
+    private async Task GrantAccess()
+    {
+        var LogCs = log.Email + "|||" + log.Password;
+        try
+        {
+            var user = await http.GetFromJsonAsync<User>($"api/login/{LogCs}");
+            PersistentData.Name = user.Name;
+            PersistentData.Role = user.Role;
+            PersistentData.Logged = true;
+            nav.NavigateTo("main");
+        }
+        catch
+        {
+            invalidCredentials = true;
+        }
+    }
+}

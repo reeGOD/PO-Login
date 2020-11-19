@@ -1,0 +1,35 @@
+﻿@inherits LayoutComponentBase
+@inject PersistentData Usuario
+
+<div class="sidebar">
+    <NavMenu />
+</div>
+
+
+
+<div class="main">
+    
+@if (Usuario.Logged)
+    {
+    
+    <div class="top-row px-4">
+        <h4><b>Hello, @Usuario.Name</b></h4> &nbsp;
+        <a href="logout" class="ml-md-auto">Logout</a>
+    </div>
+    }
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}
